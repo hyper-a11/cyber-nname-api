@@ -17,19 +17,19 @@ app.use(express.json());
 
 // 🔎 Search Route
 app.get('/search', async (req, res) => {
-  const { phone, key } = req.query;
+  const { key, type, value } = req.query;
 
-  // 1️⃣ Key Check
+  // 🔐 Key Check
   if (!key || !KEYS_DB[key]) {
     return res.status(401).json({
       success: false,
       type: "error",
-      error: "Invalid Key!",
+      message: "Invalid Key!",
       owner: OWNER_NAME
     });
   }
 
-  // 2️⃣ Expiry Check
+  // 📅 Expiry Check
   const today = DateTime.local();
   const expiryDate = DateTime.fromISO(KEYS_DB[key].expiry);
 
@@ -37,49 +37,81 @@ app.get('/search', async (req, res) => {
     return res.status(403).json({
       success: false,
       type: "error",
-      error: "Key Expired hogya go & owner",
+      message: "Key Expired!",
       owner: OWNER_NAME
     });
   }
 
-  // 3️⃣ Phone Check
-  if (!phone) {
+  // 🔎 Type & Value Check
+  if (!type || !value) {
     return res.status(400).json({
       success: false,
       type: "error",
-      error: "Phone parameter required pls fill parameter real",
+      message: "Type and value parameter required",
       owner: OWNER_NAME
     });
   }
 
   try {
-    // 🔥 External API Call
-    const response = await axios.get(
-      "https://abbas-apis.vercel.app/api/num-name",
-      {
-        params: { number: phone },
-        timeout: 10000
-      }
-    );
+    let response;
 
-    let apiData = response.data;
+    // 📱 PHONE API
+    if (type === "phone") {
+      response = await axios.get(
+        "https://abbas-apis.vercel.app/api/num-name",
+        {
+          params: { number: value },
+          timeout: 10000
+        }
+      );
+    }
 
-    // Optional credit replace
-    if (apiData && apiData.owner) {
-      apiData.owner = "CYBER×CHAT";
+    // 🪪 PAN API
+    else if (type === "pan") {
+      response = await axios.get(
+        "https://pan2info-shatirownerrr.vercel.app/pan",
+        {
+          params: {
+            key: "demo",
+            term: value
+          },
+          timeout: 10000
+        }
+      );
+    }
+
+    // 🏢 GST API
+    else if (type === "gst") {
+      response = await axios.get(
+        "https://osint-info.great-site.net/api/gst_lookup.php",
+        {
+          params: { gstNumber: value },
+          timeout: 10000
+        }
+      );
+    }
+
+    else {
+      return res.status(400).json({
+        success: false,
+        type: "error",
+        message: "Invalid type! Use phone, pan, or gst",
+        owner: OWNER_NAME
+      });
     }
 
     return res.json({
       success: true,
       type: "success",
       owner: OWNER_NAME,
-      data: apiData || {}
+      data: response.data || {}
     });
 
   } catch (error) {
     return res.status(500).json({
       success: false,
       type: "error",
+      message: "External API Error",
       error: error.message,
       owner: OWNER_NAME
     });
