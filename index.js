@@ -9,7 +9,7 @@ const OWNER_NAME = "ZEXX_OWNER";
 const KEYS_DB = {
   "ZEXX@_VIP": { expiry: "2026-12-31" },
   "OWNER_TEST": { expiry: "2035-12-30" },
-  "ZEXX_@TRY": { expiry: "2026-04-15" },
+  "ZEXX_@T4Y": { expiry: "2026-04-15" },
   "ZEXX_P@ID": { expiry: "2026-07-01" }
 };
 
